@@ -6,15 +6,16 @@ export default function Header() {
   const location = useLocation()
 
   const linkStyle = (path: string) =>
-    `hover:text-purple-400 transition ${
-      location.pathname === path ? "text-purple-400" : "text-gray-300"
+    `transition hover:text-purple-400 ${
+      location.pathname === path
+        ? "text-purple-400"
+        : "text-gray-300"
     }`
 
   return (
     <header className="flex items-center justify-between px-6 py-4 border-b border-gray-800 bg-gray-900">
 
       {/* LEFT */}
-
       <div className="flex items-center gap-8">
 
         <h1 className="text-xl font-bold text-white">
@@ -35,19 +36,25 @@ export default function Header() {
             Analytics
           </Link>
 
-        </nav>
+          <Link to="/settings" className={linkStyle("/settings")}>
+            Settings
+          </Link>
 
+        </nav>
       </div>
 
       {/* SEARCH */}
 
       <div className="hidden md:flex items-center bg-gray-800 rounded-lg px-3 py-2 w-72">
 
-        <Search size={16} className="text-gray-400 mr-2" />
+        <Search
+          size={16}
+          className="text-gray-400 mr-2"
+        />
 
         <input
           type="text"
-          placeholder="Search..."
+          placeholder="Search tools..."
           className="bg-transparent outline-none text-sm text-white w-full"
         />
 
@@ -55,23 +62,37 @@ export default function Header() {
 
       {/* RIGHT */}
 
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-5">
 
-        <div className="relative">
+        {/* Notifications */}
 
-          <Bell size={20} className="text-gray-300" />
+        <div className="relative cursor-pointer">
 
-          <span className="absolute -top-1 -right-1 bg-purple-500 text-xs px-1 rounded-full">
+          <Bell
+            size={20}
+            className="text-gray-300 hover:text-white transition"
+          />
+
+          <span className="absolute -top-1 -right-1 bg-purple-500 text-xs px-1.5 rounded-full">
             3
           </span>
 
         </div>
 
-        <div className="w-8 h-8 rounded-full bg-purple-500 flex items-center justify-center">
+        {/* Avatar */}
+
+        <div className="w-8 h-8 rounded-full bg-purple-500 flex items-center justify-center cursor-pointer">
+
           <User size={16} />
+
         </div>
 
-        <Menu className="md:hidden text-gray-300" />
+        {/* Mobile menu */}
+
+        <Menu
+          className="md:hidden text-gray-300 cursor-pointer"
+          size={22}
+        />
 
       </div>
 

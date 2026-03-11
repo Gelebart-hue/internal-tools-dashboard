@@ -6,7 +6,7 @@ Ce tableau de bord interne permet aux administrateurs IT de surveiller les outil
 ## Installation et Lancement
 
 1. Clonez le dépôt :
-git clone https://github.com/votre-utilisateur/repo.git
+git clone https://github.com/Gelebart-hue/internal-tools-dashboard.git
 
 
 2. Installez les dépendances :

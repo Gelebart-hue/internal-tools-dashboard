@@ -6,21 +6,33 @@ export const useTools = () => {
 
   const [tools, setTools] = useState<Tool[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
 
     const fetchTools = async () => {
-      const response = await api.get<Tool[]>(
-        "/tools?_sort=updated_at&_order=desc&_limit=8"
-      )
 
-      setTools(response.data)
-      setLoading(false)
+      try {
+
+        const response = await api.get<Tool[]>("/tools")
+        setTools(response.data)
+
+      } catch (err) {
+
+        setError("Failed to load tools")
+
+      } finally {
+
+        setLoading(false)
+
+      }
+
     }
 
     fetchTools()
 
   }, [])
 
-  return { tools, loading }
+  return { tools, loading, error }
+
 }

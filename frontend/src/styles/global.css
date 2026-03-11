@@ -1,0 +1,30 @@
+@import "tailwindcss";
+
+/* Variables globales */
+:root {
+  --radius: 0.75rem;
+}
+
+/* Style de base */
+body {
+  @apply bg-gray-50 text-gray-900 antialiased;
+}
+
+/* Dark mode */
+.dark body {
+  @apply bg-gray-950 text-white;
+}
+
+/* Scrollbar (optionnel mais propre pour dashboard) */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #6b7280;
+  border-radius: 8px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #4b5563;
+}

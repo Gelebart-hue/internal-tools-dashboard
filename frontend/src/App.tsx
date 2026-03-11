@@ -3,6 +3,7 @@ import Header from "./components/layout/Header"
 import DashboardPage from "./pages/DashboardPage"
 import ToolsPage from "./pages/ToolsPage"
 import AnalyticsPage from "./pages/AnalyticsPage"
+import SettingsPage from "./pages/SettingsPage"
 
 function App() {
   return (
@@ -10,15 +11,16 @@ function App() {
 
       <div className="min-h-screen bg-gray-950 text-white">
 
-      <Header />
+        <Header />
 
-      <main className="p-6">
-        <Routes>
-          <Route path="/" element={<DashboardPage />} />
-          <Route path="/tools" element={<ToolsPage />} />
-          <Route path="/analytics" element={<AnalyticsPage />} />
-        </Routes>
-      </main>
+        <main className="p-6">
+          <Routes>
+            <Route path="/" element={<DashboardPage />} />
+            <Route path="/tools" element={<ToolsPage />} />
+            <Route path="/analytics" element={<AnalyticsPage />} />
+            <Route path="/settings" element={<SettingsPage />} />
+          </Routes>
+        </main>
 
       </div>
 

@@ -1,87 +1,98 @@
-import { useMemo, useState } from "react"
+import { useState, useMemo } from "react"
 import type { Tool } from "../types/Tool"
 
-type SortField = "name" | "active_users_count" | "monthly_cost"
+/* ---------- TYPES ---------- */
 
-export const useToolsTable = (tools: Tool[]) => {
+export type SortField =
+  | "name"
+  | "vendor"
+  | "category"
+  | "owner_department"
+  | "active_users_count"
+  | "monthly_cost"
+
+type SortOrder = "asc" | "desc"
+
+/* ---------- HOOK ---------- */
+
+export function useToolsTable(tools: Tool[]) {
 
   const [search, setSearch] = useState("")
-  const [sortField, setSortField] = useState<SortField>("name")
-  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc")
   const [page, setPage] = useState(1)
 
-  const itemsPerPage = 10
+  const [sortField, setSortField] = useState<SortField>("name")
+  const [sortOrder, setSortOrder] = useState<SortOrder>("asc")
 
-  // FILTER
+  const pageSize = 8
+
+  /* ---------- SEARCH ---------- */
+
   const filteredTools = useMemo(() => {
-
     return tools.filter((tool) =>
-      tool.name.toLowerCase().includes(search.toLowerCase())
+      tool.name.toLowerCase().includes(search.toLowerCase()) ||
+      tool.vendor.toLowerCase().includes(search.toLowerCase()) ||
+      tool.category.toLowerCase().includes(search.toLowerCase())
     )
-
   }, [tools, search])
 
-  // SORT
+  /* ---------- SORT ---------- */
+
   const sortedTools = useMemo(() => {
 
-    return [...filteredTools].sort((a, b) => {
+  const sorted = [...filteredTools].sort((a, b) => {
 
-      const valueA = a[sortField] ?? 0
-      const valueB = b[sortField] ?? 0
+    const aValue = a[sortField]
+    const bValue = b[sortField]
 
-      if (typeof valueA === "string" && typeof valueB === "string") {
-
-        return sortOrder === "asc"
-          ? valueA.localeCompare(valueB)
-          : valueB.localeCompare(valueA)
-
-      }
-
+    if (typeof aValue === "number" && typeof bValue === "number") {
       return sortOrder === "asc"
-        ? Number(valueA) - Number(valueB)
-        : Number(valueB) - Number(valueA)
+        ? aValue - bValue
+        : bValue - aValue
+    }
 
-    })
+    return sortOrder === "asc"
+      ? String(aValue).localeCompare(String(bValue))
+      : String(bValue).localeCompare(String(aValue))
 
-  }, [filteredTools, sortField, sortOrder])
+  })
 
-  // PAGINATION
-  const totalPages = Math.ceil(sortedTools.length / itemsPerPage)
+  return sorted
+
+}, [filteredTools, sortField, sortOrder])
+
+  /* ---------- PAGINATION ---------- */
+
+  const totalPages = Math.ceil(sortedTools.length / pageSize)
 
   const paginatedTools = useMemo(() => {
 
-    return sortedTools.slice(
-      (page - 1) * itemsPerPage,
-      page * itemsPerPage
-    )
+    const start = (page - 1) * pageSize
+    return sortedTools.slice(start, start + pageSize)
 
   }, [sortedTools, page])
 
+  /* ---------- SORT HANDLER ---------- */
+
   const handleSort = (field: SortField) => {
 
-    if (sortField === field) {
-
+    if (field === sortField) {
       setSortOrder(sortOrder === "asc" ? "desc" : "asc")
-
     } else {
-
       setSortField(field)
       setSortOrder("asc")
-
     }
 
   }
 
   return {
+    tools: paginatedTools,
     search,
     setSearch,
     page,
     setPage,
     totalPages,
-    paginatedTools,
-    handleSort,
     sortField,
-    sortOrder
+    sortOrder,
+    handleSort
   }
-
 }
