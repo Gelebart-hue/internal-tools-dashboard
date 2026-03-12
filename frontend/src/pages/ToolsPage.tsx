@@ -1,4 +1,5 @@
-import { useState, useMemo } from "react"
+import { useMemo, useState, useEffect } from "react"
+
 import ToolsTable from "../components/tools/ToolsTable"
 import ToolsFilters from "../components/tools/ToolsFilters"
 import AddToolModal from "../components/tools/AddToolModal"
@@ -6,165 +7,192 @@ import AddToolModal from "../components/tools/AddToolModal"
 import { useTools } from "../hooks/useTools"
 import { useToolsTable } from "../hooks/useToolsTable"
 
-export default function ToolsPage() {
+import type { Tool } from "../types/Tool"
+import ToolDetailsModal from "../components/tools/ToolDetailsModal"
 
-  const { tools, loading, error } = useTools()
+interface ToolsPageProps {
+  search: string
+}
 
-  const [search, setSearch] = useState("")
+export default function ToolsPage({ search }: ToolsPageProps) {
+
+  const { tools: apiTools, loading } = useTools()
+
+  const [tools, setTools] = useState<Tool[]>([])
   const [department, setDepartment] = useState("")
   const [status, setStatus] = useState("")
   const [category, setCategory] = useState("")
-
   const [openModal, setOpenModal] = useState(false)
+  const [page, setPage] = useState(1)
+  const [selectedTool, setSelectedTool] = useState<Tool | null>(null)
 
-  /* FILTER + SEARCH */
+  const ITEMS_PER_PAGE = 10
 
-  const filteredTools = useMemo(() => {
-
-    return tools.filter((tool) => {
-
-      const matchesSearch =
-        tool.name.toLowerCase().includes(search.toLowerCase())
-
-      const matchesDepartment =
-        !department || tool.owner_department === department
-
-      const matchesStatus =
-        !status || tool.status === status
-
-      const matchesCategory =
-        !category ||
-        tool.category.toLowerCase().includes(category.toLowerCase().trim())
-
-      return (
-        matchesSearch &&
-        matchesDepartment &&
-        matchesStatus &&
-        matchesCategory
-      )
-
-    })
-
-  }, [tools, search, department, status, category])
-
-  /* TABLE LOGIC (sort + pagination) */
+  useEffect(() => {
+    setTools(apiTools)
+  }, [apiTools])
 
   const {
-    tools: paginatedTools,
-    page,
-    setPage,
-    totalPages,
     sortField,
     sortOrder,
     handleSort
-  } = useToolsTable(filteredTools)
+  } = useToolsTable(tools)
 
-  if (error) {
-    return (
-      <div className="min-h-screen bg-gray-950 text-white p-8">
-        <p className="text-red-400">{error}</p>
-      </div>
-    )
+  // Création d'outil (state local)
+
+  const handleCreate = (newTool: Partial<Tool>) => {
+
+    const tool: Tool = {
+      id: Date.now(),
+
+      name: newTool.name ?? "New Tool",
+      description: newTool.description ?? "",
+
+      category: newTool.category ?? "Other",
+      owner_department: newTool.owner_department ?? "IT",
+
+      vendor: newTool.vendor ?? "Unknown",
+
+      website_url: newTool.website_url ?? "",
+      icon_url: newTool.icon_url ?? "",
+
+      status: "active",
+
+      active_users_count: 0,
+
+      monthly_cost: Number(newTool.monthly_cost) || 0,
+      previous_month_cost: 0,
+
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString().slice(0, 10)
+    }
+
+    setTools(prev => [tool, ...prev])
+
   }
 
+  // Filtrage
+
+  const filteredTools = useMemo(() => {
+
+    let result = tools
+
+    if (search) {
+      result = result.filter(tool =>
+        tool.name.toLowerCase().includes(search.toLowerCase())
+      )
+    }
+
+    if (department) {
+      result = result.filter(tool => tool.owner_department === department)
+    }
+
+    if (status) {
+      result = result.filter(tool => tool.status === status)
+    }
+
+    if (category) {
+      result = result.filter(tool => tool.category === category)
+    }
+
+    return result
+
+  }, [tools, search, department, status, category])
+
+  // Pagination
+
+  const totalPages = Math.ceil(filteredTools.length / ITEMS_PER_PAGE)
+
+  const paginatedTools = filteredTools.slice(
+    (page - 1) * ITEMS_PER_PAGE,
+    page * ITEMS_PER_PAGE
+  )
+
+  const handleToggleStatus = (tool: Tool) => {
+
+  setTools(prev =>
+    prev.map(t =>
+      t.id === tool.id
+        ? {
+            ...t,
+            status: t.status === "active" ? "disabled" : "active"
+          }
+        : t
+    )
+  )
+
+}
+
   return (
-    <div className="min-h-screen bg-gray-950 text-white">
 
-      <div className="max-w-7xl mx-auto p-8 space-y-6">
+    <div className="space-y-6">
 
-        {/* HEADER */}
-        <div className="flex items-center justify-between">
+      {/* Header */}
 
-          <h1 className="text-2xl font-bold">
+      <div className="flex items-center justify-between">
+
+        <div>
+
+          <h1 className="text-2xl font-bold text-white">
             Tools Catalog
           </h1>
 
-          <button
-            onClick={() => setOpenModal(true)}
-            className="
-              px-4 py-2
-              bg-purple-600
-              rounded-lg
-              hover:bg-purple-500
-              transition
-            "
-          >
-            + Add Tool
-          </button>
+          <p className="text-gray-400 text-sm">
+            Manage and monitor internal tools
+          </p>
 
         </div>
 
-        {/* SEARCH */}
-        <input
-          type="text"
-          placeholder="Search tools..."
-          value={search}
-          onChange={(e) => {
-            setSearch(e.target.value)
-            setPage(1)
-          }}
-          className="
-            w-full
-            max-w-md
-            px-4
-            py-2
-            bg-gray-900
-            border
-            border-gray-800
-            rounded-lg
-            focus:outline-none
-            focus:border-purple-500
-          "
-        />
-
-        {/* FILTERS */}
-        <ToolsFilters
-          tools={tools}
-          department={department}
-          setDepartment={setDepartment}
-          status={status}
-          setStatus={setStatus}
-          category={category}
-          setCategory={setCategory}
-        />
-
-        {/* TABLE */}
-
-        {loading ? (
-
-          <div className="text-gray-400">
-            Loading tools...
-          </div>
-
-        ) : paginatedTools.length === 0 ? (
-
-          <div className="text-gray-400">
-            No tools found
-          </div>
-
-        ) : (
-
-          <ToolsTable
-            tools={paginatedTools}
-            loading={loading}
-            page={page}
-            setPage={setPage}
-            totalPages={totalPages}
-            sortField={sortField}
-            sortOrder={sortOrder}
-            handleSort={handleSort}
-          />
-
-        )}
+        <button
+          onClick={() => setOpenModal(true)}
+          className="bg-purple-600 px-4 py-2 rounded-lg hover:bg-purple-700 transition"
+        >
+          Add Tool
+        </button>
 
       </div>
 
-      {/* MODAL */}
+      {/* Filters */}
+
+      <ToolsFilters
+        tools={tools}
+        department={department}
+        setDepartment={setDepartment}
+        status={status}
+        setStatus={setStatus}
+        category={category}
+        setCategory={setCategory}
+      />
+
+      {/* Table */}
+
+      <ToolsTable
+        tools={paginatedTools}
+        loading={loading}
+        handleSort={handleSort}
+        sortField={sortField}
+        sortOrder={sortOrder}
+        page={page}
+        setPage={setPage}
+        totalPages={totalPages}
+        onView={(tool) => setSelectedTool(tool)}
+        onToggleStatus={handleToggleStatus}
+      />
+
+      {/* Modal création */}
+
       <AddToolModal
         open={openModal}
         onClose={() => setOpenModal(false)}
+        onCreate={handleCreate}
+      />
+
+      <ToolDetailsModal
+        tool={selectedTool}
+        onClose={() => setSelectedTool(null)}
       />
 
     </div>
+
   )
 }

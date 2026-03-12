@@ -3,9 +3,26 @@ import StatusBadge from "../ui/StatusBadge"
 
 interface Props {
   tools: Tool[]
+  loading?: boolean
 }
 
-export default function RecentToolsTable({ tools }: Props) {
+const logos: Record<string, string> = {
+  figma: "/logos/figma.svg",
+  jira: "/logos/jira.svg",
+  zoom: "/logos/zoom.svg",
+  canva: "/logos/canva.png",
+  github: "/logos/github.svg"
+}
+
+export default function RecentToolsTable({ tools, loading }: Props) {
+
+  if (loading) {
+    return (
+      <div className="text-gray-400">
+        Loading tools...
+      </div>
+    )
+  }
 
   return (
 
@@ -38,9 +55,12 @@ export default function RecentToolsTable({ tools }: Props) {
 
                 {tool.icon_url && (
                   <img
-                    src={tool.icon_url}
+                    src={
+                    logos[tool.name.toLowerCase()] ||
+                    "/logos/default.svg"
+                    }
                     alt={tool.name}
-                    className="w-5 h-5"
+                    className="w-8 h-8 p-1 rounded-md bg-slate-800 object-contain"
                   />
                 )}
 

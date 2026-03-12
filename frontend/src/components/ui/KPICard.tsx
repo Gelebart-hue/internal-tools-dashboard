@@ -1,6 +1,6 @@
 import type { LucideIcon } from "lucide-react"
 
-interface Props {
+type Props = {
   title: string
   value: string
   icon: LucideIcon
@@ -34,7 +34,7 @@ export default function KPICard({ title, value, icon: Icon }: Props) {
 
       </div>
 
-      <h2 className="text-2xl font-bold text-white">
+      <h2 className="text-2xl font-bold text-white truncate">
         {value}
       </h2>
 

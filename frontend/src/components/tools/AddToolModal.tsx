@@ -3,9 +3,10 @@ import { useState } from "react"
 interface Props {
   open: boolean
   onClose: () => void
+  onCreate: (tool: any) => void
 }
 
-export default function AddToolModal({ open, onClose }: Props) {
+export default function AddToolModal({ open, onClose, onCreate }: Props) {
 
   const [name, setName] = useState("")
   const [category, setCategory] = useState("")
@@ -13,57 +14,64 @@ export default function AddToolModal({ open, onClose }: Props) {
 
   if (!open) return null
 
+  const handleSubmit = () => {
+
+    if (!name || !category) {
+      alert("All fields are required")
+      return
+    }
+
+    onCreate({
+      name,
+      category,
+      monthly_cost: Number(cost)
+    })
+
+    onClose()
+  }
+
   return (
 
-    <div className="fixed inset-0 flex items-center justify-center bg-black/60">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center">
 
-      <div className="bg-gray-900 border border-gray-800 rounded-xl p-6 w-full max-w-md">
+      <div className="bg-slate-900 p-6 rounded-xl w-96 space-y-4">
 
-        <h2 className="text-xl font-bold mb-4">
-          Add New Tool
+        <h2 className="text-lg font-semibold text-white">
+          Add new tool
         </h2>
 
-        <div className="space-y-4">
+        <input
+          className="w-full p-2 rounded bg-slate-800"
+          placeholder="Tool name"
+          value={name}
+          onChange={(e)=>setName(e.target.value)}
+        />
 
-          <input
-            type="text"
-            placeholder="Tool name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2"
-          />
+        <input
+          className="w-full p-2 rounded bg-slate-800"
+          placeholder="Category"
+          value={category}
+          onChange={(e)=>setCategory(e.target.value)}
+        />
 
-          <input
-            type="text"
-            placeholder="Category"
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-            className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2"
-          />
+        <input
+          className="w-full p-2 rounded bg-slate-800"
+          placeholder="Monthly cost"
+          value={cost}
+          onChange={(e)=>setCost(e.target.value)}
+        />
 
-          <input
-            type="number"
-            placeholder="Monthly cost"
-            value={cost}
-            onChange={(e) => setCost(e.target.value)}
-            className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2"
-          />
+        <div className="flex justify-end gap-3">
 
-        </div>
-
-        <div className="flex justify-end gap-3 mt-6">
-
-          <button
-            onClick={onClose}
-            className="px-4 py-2 bg-gray-800 rounded-lg hover:bg-gray-700"
-          >
+          <button onClick={onClose} className="text-slate-400">
             Cancel
           </button>
 
           <button
-            className="px-4 py-2 bg-purple-600 rounded-lg hover:bg-purple-500"
+            onClick={handleSubmit}
+            className="bg-purple-600 px-3 py-2 rounded"
           >
-            Add Tool
+            Create
           </button>
 
         </div>

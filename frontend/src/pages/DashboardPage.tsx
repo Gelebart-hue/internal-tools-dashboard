@@ -1,67 +1,48 @@
-
-import KPICard from "../components/ui/KPICard"
-import RecentToolsTable from "../components/tools/RecentToolsTable"
+import { useMemo } from "react"
 import { useTools } from "../hooks/useTools"
-import { useAnalytics } from "../hooks/useAnalytics"
-import { Wallet, Wrench, Users, DollarSign } from "lucide-react"
+import RecentToolsTable from "../components/dashboard/RecentToolsTable"
+import KPICards from "../components/dashboard/KPICards"
 
-export default function DashboardPage() {
+interface DashboardPageProps {
+  search: string
+}
+
+export default function DashboardPage({ search }: DashboardPageProps) {
 
   const { tools, loading } = useTools()
-  const { analytics } = useAnalytics()
+
+  const filteredTools = useMemo(() => {
+
+    if (!search) return tools
+
+    return tools.filter((tool) =>
+      tool.name.toLowerCase().includes(search.toLowerCase())
+    )
+
+  }, [tools, search])
 
   return (
 
-    <div className="min-h-screen bg-gray-950 text-white">
+    <div className="space-y-6">
 
-      <div className="p-8 space-y-8">
+      <div>
 
-        {/* KPI GRID */}
+        <h1 className="text-2xl font-bold text-white">
+          Dashboard
+        </h1>
 
-        <div className="grid md:grid-cols-4 gap-6">
-
-        <KPICard
-          title="Budget"
-          value={`€${analytics?.budget_overview.current_month_total ?? "-"}`}
-          icon={Wallet}
-        />
-
-        <KPICard
-          title="Active Tools"
-          value={`${analytics?.cost_analytics.active_users ?? "-"}`}
-          icon={Wrench}
-        />
-
-        <KPICard
-          title="Departments"
-          value="8"
-          icon={Users}
-        />
-
-        <KPICard
-          title="Cost per User"
-          value={`€${analytics?.cost_analytics.cost_per_user ?? "-"}`}
-          icon={DollarSign}
-        />
+        <p className="text-gray-400 text-sm">
+          Overview of your internal tools
+        </p>
 
       </div>
 
-        {/* RECENT TOOLS */}
+      <KPICards tools={tools} />
 
-        <div>
-
-          <h2 className="text-xl font-bold mb-4">
-            Recent Tools
-          </h2>
-
-          {loading
-            ? <p className="text-gray-400">Loading...</p>
-            : <RecentToolsTable tools={tools} />
-          }
-
-        </div>
-
-      </div>
+      <RecentToolsTable
+        tools={filteredTools}
+        loading={loading}
+      />
 
     </div>
 

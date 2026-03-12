@@ -1,66 +1,48 @@
 import { useState, useMemo } from "react"
 import type { Tool } from "../types/Tool"
 
-/* ---------- TYPES ---------- */
+export type SortOrder = "asc" | "desc"
 
 export type SortField =
   | "name"
-  | "vendor"
   | "category"
-  | "owner_department"
-  | "active_users_count"
+  | "status"
   | "monthly_cost"
-
-type SortOrder = "asc" | "desc"
-
-/* ---------- HOOK ---------- */
+  | "updated_at"
 
 export function useToolsTable(tools: Tool[]) {
 
-  const [search, setSearch] = useState("")
-  const [page, setPage] = useState(1)
-
   const [sortField, setSortField] = useState<SortField>("name")
   const [sortOrder, setSortOrder] = useState<SortOrder>("asc")
+  const [page, setPage] = useState(1)
 
-  const pageSize = 8
-
-  /* ---------- SEARCH ---------- */
-
-  const filteredTools = useMemo(() => {
-    return tools.filter((tool) =>
-      tool.name.toLowerCase().includes(search.toLowerCase()) ||
-      tool.vendor.toLowerCase().includes(search.toLowerCase()) ||
-      tool.category.toLowerCase().includes(search.toLowerCase())
-    )
-  }, [tools, search])
-
-  /* ---------- SORT ---------- */
+  const pageSize = 10
 
   const sortedTools = useMemo(() => {
 
-  const sorted = [...filteredTools].sort((a, b) => {
+    const sorted = [...tools].sort((a, b) => {
 
-    const aValue = a[sortField]
-    const bValue = b[sortField]
+      const aValue = a[sortField]
+      const bValue = b[sortField]
 
-    if (typeof aValue === "number" && typeof bValue === "number") {
-      return sortOrder === "asc"
-        ? aValue - bValue
-        : bValue - aValue
-    }
+      if (typeof aValue === "number" && typeof bValue === "number") {
+        return sortOrder === "asc"
+          ? aValue - bValue
+          : bValue - aValue
+      }
 
-    return sortOrder === "asc"
-      ? String(aValue).localeCompare(String(bValue))
-      : String(bValue).localeCompare(String(aValue))
+      const aString = String(aValue).toLowerCase()
+      const bString = String(bValue).toLowerCase()
 
-  })
+      if (aString < bString) return sortOrder === "asc" ? -1 : 1
+      if (aString > bString) return sortOrder === "asc" ? 1 : -1
+      return 0
 
-  return sorted
+    })
 
-}, [filteredTools, sortField, sortOrder])
+    return sorted
 
-  /* ---------- PAGINATION ---------- */
+  }, [tools, sortField, sortOrder])
 
   const totalPages = Math.ceil(sortedTools.length / pageSize)
 
@@ -71,28 +53,27 @@ export function useToolsTable(tools: Tool[]) {
 
   }, [sortedTools, page])
 
-  /* ---------- SORT HANDLER ---------- */
-
   const handleSort = (field: SortField) => {
 
     if (field === sortField) {
-      setSortOrder(sortOrder === "asc" ? "desc" : "asc")
+      setSortOrder(prev => prev === "asc" ? "desc" : "asc")
     } else {
       setSortField(field)
       setSortOrder("asc")
     }
 
+    setPage(1)
+
   }
 
   return {
     tools: paginatedTools,
-    search,
-    setSearch,
-    page,
-    setPage,
-    totalPages,
     sortField,
     sortOrder,
-    handleSort
+    handleSort,
+    page,
+    setPage,
+    totalPages
   }
+
 }
